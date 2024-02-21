@@ -1,0 +1,15 @@
+@startuml
+ !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/latest/C4_Context.puml
+
+ Person(user, "User", "A user of the social network")
+ System(socialNetwork, "Social Network Service", "Social Network system")
+
+ System_Ext(statisticsService, "Statistics Service", "Tracks posts statistics (likes, comments)")
+ System_Ext(postsService, "Posts Service", "Manages and stores posts and comments")
+ System_Ext(broker, "Message Broker", "Handles event messages")
+
+ Rel(user, socialNetwork, "Uses")
+ Rel(socialNetwork, statisticsService, "Queries")
+ Rel(socialNetwork, postsService, "Store and read posts & comments")
+ Rel(socialNetwork, broker, "Sends events to")
+@enduml
