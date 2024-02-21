@@ -1,0 +1,27 @@
+@startuml
+ !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/latest/C4_Container.puml
+
+ LAYOUT_WITH_LEGEND()
+
+ Person(user, "User", "A user of the Social Network")
+ Container(clientApi, "Client API", "External Service, REST API", "Endpoint for user to communicate with the service")
+ Container(statisticsService, "Statistics", "Inner service, gRPC", "Processes posts and users statistics")
+ Container(postsService, "Posts", "Inner service, gRPC", "Service for posting comments and posts")
+
+ ContainerDb(userDb, "Users", "SQL Database", "Stores users meta- and auth data")
+ ContainerDb(statisticsDb, "Statistics", "ClickHouse", "Stores statistics")
+ ContainerDb(postsDb, "Posts", "SQL Database", "Stores posts and comments")
+
+ Container(broker, "Message Broker", "Kafka/RabbitMQ", "Provides event communication")
+
+ Rel(user, clientApi, "Request", "HTTP")
+ Rel(clientApi, statisticsService, "Invoke", "gRPC")
+ Rel(clientApi, postsService, "Invoke", "gRPC")
+
+ Rel(clientApi, broker, "Publish", "AMQP")
+ Rel(broker, statisticsService, "Invoke", "AMQP")
+
+ Rel(clientApi, userDb, "Read/Write")
+ Rel(statisticsService, statisticsDb, "Read/Write")
+ Rel(postsService, postsDb, "Read/Write")
+@enduml
