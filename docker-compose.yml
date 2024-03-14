@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13.3-alpine
+    environment:
+      POSTGRES_DB: "client_api_db"
+      POSTGRES_USER: "pguser"
+      POSTGRES_PASSWORD: "POSTGRES_PASSWORD"
+    ports:
+      - "34175:5432"
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+
+  client-api:
+    build: ./client-api
+    ports:
+      - "5000:5000"
+    environment:
+      - SQL_ENGINE_URI=postgresql+asyncpg://pguser:POSTGRES_PASSWORD@db/client_api_db
+      - SECRET_KEY=SECRET_KEY
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
