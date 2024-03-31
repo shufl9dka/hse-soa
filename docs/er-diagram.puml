@@ -1,0 +1,54 @@
+@startuml
+ !define Table(name,desc) class name as "desc" << (T,white) >>
+ !define primary_key(x) <u>x</u>
+ !define foreign_key(x) <color:red>x</color>
+
+ Table(user, "User") {
+     +primary_key(id) : uuid
+     +auth_hash : varchar
+     +password : varchar
+     +metadata : json
+ }
+
+ Table(post, "Post") {
+     +primary_key(id) : uuid
+     +foreign_key(user_id) : uuid
+     +content_text : text
+     +created_at : datetime
+     +edited_at : datetime
+ }
+
+ Table(like, "Like") {
+     +primary_key(id) : uuid
+     +foreign_key(post_id) : uuid
+     +foreign_key(user_id) : int
+     +created_at : datetime
+ }
+
+ Table(comment, "Comment") {
+     +primary_key(id) : uuid
+     +foreign_key(post_id) : uuid
+     +foreign_key(user_id) : uuid
+     +foreign_key(parent_id) : uuid
+     +content_text : text
+     +created_at : datetime
+ }
+
+ Table(statistic, "Statistic") {
+     +primary_key(id) : uuid
+     +foreign_key(post_id) : uuid
+     +views : int
+     +likes : int
+ }
+
+ user --|{ post : "has"
+ user --|{ comment : "posts"
+ user --|{ like : "gives"
+
+
+ post --o{ comment : "receives"
+ post --o{ like : "receives"
+ post --|{ statistic : "has"
+
+ comment --o{ comment : "has sub comments"
+ @enduml
