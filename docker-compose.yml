@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  db:
+  client_db:
     image: postgres:13.3-alpine
     environment:
       POSTGRES_DB: "client_api_db"
@@ -10,18 +10,49 @@ services:
     ports:
       - "34175:5432"
     volumes:
-      - ./init-db:/docker-entrypoint-initdb.d
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_client_data:/var/lib/postgresql/data
+
+  posts_db:
+    image: postgres:13.3-alpine
+    environment:
+      POSTGRES_DB: "posts_db"
+      POSTGRES_USER: "pguser"
+      POSTGRES_PASSWORD: "POSTGRES_PASSWORD"
+    ports:
+      - "34176:5432"
+    volumes:
+      - postgres_posts_data:/var/lib/postgresql/data
 
   client-api:
-    build: ./client-api
+    build:
+      context: .
+      dockerfile: ./client-api/Dockerfile
     ports:
       - "5000:5000"
     environment:
-      - SQL_ENGINE_URI=postgresql+asyncpg://pguser:POSTGRES_PASSWORD@db/client_api_db
-      - SECRET_KEY=SECRET_KEY
+      SQL_ENGINE_URI: "postgresql+asyncpg://pguser:POSTGRES_PASSWORD@client_db/client_api_db"
+      SECRET_KEY: "SECRET_KEY"
+      POSTS_SERVICE_ADDR: "host.docker.internal:50051"
     depends_on:
-      - db
+      - client_db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  
+  posts-grpc:
+    build:
+      context: .
+      dockerfile: ./posts-grpc/Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      SQL_ENGINE_URI: "postgresql+asyncpg://pguser:POSTGRES_PASSWORD@posts_db/posts_db"
+      GRPC_PORT: "50051"
+      POSTS_PAGE_SIZE: "20"
+    depends_on:
+      - posts_db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
-  postgres_data:
+  postgres_client_data:
+  postgres_posts_data:
