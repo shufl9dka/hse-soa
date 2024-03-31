@@ -7,8 +7,8 @@ RUN mkdir /app
 RUN mkdir /protos
 WORKDIR /app
 
-ADD ./client-api/ /app/
-ADD ./client-api/requirements.txt requirements.txt
+ADD ./posts-grpc/ /app/
+ADD ./posts-grpc/requirements.txt requirements.txt
 ADD ./protos/ /protos/
 
 RUN apt update -y
@@ -17,4 +17,4 @@ RUN pip install -r requirements.txt
 
 RUN python -m grpc_tools.protoc -I/protos --python_out=/app --pyi_out=/app --grpc_python_out=/app /protos/posts.proto
 
-ENTRYPOINT ["uvicorn", "--host", "*", "--port", "5000", "main:app"]
+ENTRYPOINT ["python", "main.py"]
